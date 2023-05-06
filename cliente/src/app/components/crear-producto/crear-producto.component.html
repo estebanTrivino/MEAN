@@ -3,7 +3,7 @@
     <div class="col-lg-6 offset-lg-3">
       <div class="card">
         <div class="card-body text-center">
-          <span class="titulo">CREAR PRODUCTO</span>
+          <span class="titulo">{{ titulo | uppercase}}</span>
           <form class="mt-3" [formGroup]="productoForm" (ngSubmit)="agregarProducto()">
             <div class="mb-3">
               <input type="text" formControlName="producto"
@@ -43,7 +43,7 @@
             </div>
             <div class="mb-3">
               <button routerLink="/" class="btn btn-secondary btn-lg float-start">VOLVER</button>
-              <button type="submit" [disabled]="productoForm.invalid" class="btn btn-success btn-lg float-end">CREAR</button>
+              <button type="submit" [disabled]="productoForm.invalid" class="btn btn-success btn-lg float-end">{{ guardar | uppercase}}</button>
             </div>
           </form>
         </div>

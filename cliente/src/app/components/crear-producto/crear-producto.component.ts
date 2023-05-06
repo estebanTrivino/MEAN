@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {Producto} from "../../models/producto";
-import {Router} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {ToastrService} from "ngx-toastr";
+import {ProductoService} from "../../services/producto.service";
 
 @Component({
   selector: 'app-crear-producto',
@@ -11,18 +12,25 @@ import {ToastrService} from "ngx-toastr";
 })
 export class CrearProductoComponent {
   productoForm: FormGroup;
-
-  constructor(private fb: FormBuilder, private router: Router, private toastr: ToastrService) {
+  titulo = 'Crear producto';
+  guardar = 'Crear';
+  id: string | null;
+  constructor(private fb: FormBuilder,
+              private router: Router,
+              private toastr: ToastrService,
+              private productoService: ProductoService,
+              private aRouter: ActivatedRoute) {
     this.productoForm = this.fb.group({
       producto: ['', Validators.required],
       categoria: ['', Validators.required],
       ubicacion: ['', Validators.required],
       precio: ['', Validators.required]
     })
+    this.id = this.aRouter.snapshot.paramMap.get('id');
   }
 
   ngOnInit(): void {
-
+    this.esEditar();
   }
   agregarProducto(){
     const PRODUCTO: Producto = {
@@ -31,7 +39,37 @@ export class CrearProductoComponent {
       ubicacion: this.productoForm.get('ubicacion')?.value,
       precio: this.productoForm.get('precio')?.value
     }
-    this.toastr.success('El producto fue agregado con exito.', 'Producto Agregado');
-    this.router.navigate(['/']);
+
+    if(this.id !== null) {
+      // Editamos el producto
+      this.productoService.editarProducto(this.id, PRODUCTO).subscribe(data => {
+        this.toastr.info('El producto fue actualizado con exito.', 'Producto Actualizado');
+        this.router.navigate(['/']);
+      })
+    } else {
+      // Agregamos producto
+      this.productoService.guardarProducto(PRODUCTO).subscribe(data => {
+        this.toastr.success('El producto fue agregado con exito.', 'Producto Agregado');
+        this.router.navigate(['/']);
+      }, error => {
+        console.log(error);
+        this.productoForm.reset();
+      })
+    }
+  }
+
+  esEditar(){
+    if(this.id !== null){
+      this.titulo = 'Editar Producto';
+      this.guardar = 'Actualizar';
+      this.productoService.obtenerProducto(this.id).subscribe(data => {
+        this.productoForm.setValue({
+          producto: data.nombre,
+          categoria: data.categoria,
+          ubicacion: data.ubicacion,
+          precio: data.precio
+        })
+      })
+    }
   }
 }
